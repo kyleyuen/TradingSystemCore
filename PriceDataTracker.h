@@ -11,6 +11,9 @@ public:
     double lowestPrice(); //lowest price 
     double recentPrice(); //most recent price
     bool addPrice(int time, double amount); //add a new timestamp
+    int timestamp(); //get latest timestamp
+    bool getState(); //get current state
+    int sizeofMap(); //get size of Map
 
 private:
     std::unordered_map<int, double> data; 
