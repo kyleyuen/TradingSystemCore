@@ -35,6 +35,19 @@ double PriceData::recentPrice(){
     return this->latestPrice;
 }
 
+//getter for timeStamp
+int PriceData::timestamp(){
+    return latestTimestamp;
+}
+
+bool PriceData::getState(){
+    return state; 
+}
+
+int PriceData::sizeofMap(){
+    return data.size();
+}
+
 //Add a stock Data 
 bool PriceData::addPrice(int time, double amount){
     if(amount < 0) return false; 
