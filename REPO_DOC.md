@@ -124,5 +124,3 @@ PriceDataTracker is a small C++ program to read price data from a CSV file and t
 - All edits were committed and pushed to `https://github.com/kyleyuen/TradingSystemCore.git` on branch `main`.
 
 ---
-
-If you want this formatted differently or need more details (e.g., a JSON schema, a per-function example of input/output, or explicit AST-style signatures for each function), tell me how you want it structured and I'll update `REPO_DOC.md` accordingly.
