@@ -34,9 +34,12 @@ bool readCSV::readData(const char* filename, PriceData& priceData){
             columnIndex++;
         }
 
+        //Adding to the priceData 
         priceData.addPrice(rows, closePrice); 
         rows++; 
     }
     dataFile.close();
     return true;
 }
+
+
