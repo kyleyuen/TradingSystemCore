@@ -1,38 +1,21 @@
 #include "Indicators.h"
-#include <queue>
 #include <iostream>
 
 using namespace std; 
 
 SimpleMovingAverage::SimpleMovingAverage(int N){
     nWindow = N; 
-    SMAresult = 0; 
+
 }
 
-bool SimpleMovingAverage::SMA(PriceData& priceData){
-    if(!priceData.getState()) return false; 
-    queue<double> Ncurrent; 
-    double t = priceData.timestamp(); 
-    int counter = 0; 
+double SimpleMovingAverage::SMA(PriceData& priceData){
+    vector<double> prices = priceData.returnNdata(nWindow);
+    if(prices.size() < nWindow) return -1; 
 
-    while(counter < nWindow && t >= 0){
-        if(priceData.price(t - counter) != -1){
-            Ncurrent.push(priceData.price(t-counter));
-        }
-        counter++; 
+    double sum = 0; 
+    for(int i = 0; i < prices.size(); i++){
+        sum += prices[i]; 
     }
 
-    if(counter < nWindow){
-        cerr << "Not enough data for N Window, please choose a smaller N" << endl;
-        return false; 
-    }
-
-    double total  = 0; 
-    while(!Ncurrent.empty()){
-        total += Ncurrent.front();
-        Ncurrent.pop();
-    }
-
-    SMAresult = total/nWindow;
-    return true; 
+    return sum/nWindow; 
 }
