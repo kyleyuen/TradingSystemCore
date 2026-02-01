@@ -1,6 +1,9 @@
 #include "PriceDataTracker.h"
 #include <iostream>
 #include <unordered_map>
+#include <set>
+#include <vector>
+#include <iterator>
 
 using namespace std; 
 
@@ -68,9 +71,28 @@ bool PriceData::addPrice(int time, double amount){
         LPrice = amount; 
     }
 
-    data[time] = amount;   
+    data[time] = amount;
+    timestamps.insert(time);   
     return true;
 } 
+
+//Return vector for SMA proccessing base on N values 
+std::vector<double> PriceData::returnNdata(std::size_t N){
+    std::vector<double> prices; 
+    if(state != true || N == 0){
+        return prices; 
+    }
+
+    auto it = timestamps.rbegin(); 
+    while(it != timestamps.rend() && prices.size() < N){
+        int time = *it; 
+        prices.push_back(data[time]);
+        it++; 
+    }
+
+    return prices;  
+}
+
 
 
 
