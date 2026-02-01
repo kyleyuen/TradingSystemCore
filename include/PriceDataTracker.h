@@ -2,6 +2,9 @@
 #define PRICEDATATRACKER_H
 
 #include <unordered_map>
+#include <set>
+#include <vector>
+#include <cstddef>
 
 class PriceData{
 public:
@@ -14,9 +17,12 @@ public:
     int timestamp(); //get latest timestamp
     bool getState(); //get current state
     int sizeofMap(); //get size of Map
+    std::vector<double> returnNdata(std::size_t N); //return N data for SMA 
 
 private:
     std::unordered_map<int, double> data; 
+    std::set<int> timestamps; 
+
     double latestPrice; 
     int latestTimestamp; 
     double HPrice;; 

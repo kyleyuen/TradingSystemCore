@@ -1,0 +1,28 @@
+# Build artifacts
+*.o
+*.obj
+*.exe
+tracker
+/build/
+*.out
+*.a
+*.so
+*.d
+
+# Compiler generated directories and files
+*.dSYM/
+
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+*.swp
+*.swo
+
+# Backup files
+*~
+
+# Logs
+*.log
+docs/REPO_DOC.md

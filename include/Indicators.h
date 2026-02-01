@@ -2,19 +2,18 @@
 #define INDICATORS_H
 
 
-#include <queue>
+#include <cstddef>
 #include "PriceDataTracker.h"
 
 using namespace std;
 
 class SimpleMovingAverage{
 public:
-    SimpleMovingAverage(int N);
-    bool SMA(PriceData& priceData);
+    SimpleMovingAverage(std::size_t N);
+    double SMA(PriceData& priceData);
 
 private:
-    int nWindow;
-    double SMAresult; 
+    std::size_t nWindow;
 };
 
 #endif 

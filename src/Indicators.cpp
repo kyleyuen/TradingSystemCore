@@ -3,7 +3,7 @@
 
 using namespace std; 
 
-SimpleMovingAverage::SimpleMovingAverage(int N){
+SimpleMovingAverage::SimpleMovingAverage(std::size_t N){
     nWindow = N; 
 
 }
@@ -13,9 +13,9 @@ double SimpleMovingAverage::SMA(PriceData& priceData){
     if(prices.size() < nWindow) return -1; 
 
     double sum = 0; 
-    for(int i = 0; i < prices.size(); i++){
+    for(std::size_t i = 0; i < prices.size(); ++i){
         sum += prices[i]; 
     }
 
-    return sum/nWindow; 
+    return sum / static_cast<double>(nWindow); 
 }
