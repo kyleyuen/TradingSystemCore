@@ -1,66 +1,124 @@
 #include <iostream>
-#include <fstream>
 #include <string>
+#include <vector>
+#include <chrono>
+
 #include "PriceDataTracker.h"
 #include "ReadCSV.h"
+#include "Indicators.h"
+#include "SMATrendStrategy.h"
 
-using namespace std; 
+using namespace std;
+using Clock = chrono::high_resolution_clock;
 
-int main(int argc, char* argv[]){
-    // Built-in tests when no filename provided or when requested explicitly
-    auto runTests = [](){
-        std::cout << "Running built-in tests...\n";
-        PriceData pd;
-        bool ok = true;
+int main() {
+    cout << "=== Trading System Core Demo ===\n\n";
 
-        if(pd.getState()){
-            std::cerr << "FAIL: initial state should be false\n"; ok = false;
-        } else {
-            std::cout << "PASS: initial state false\n";
-        }
+    auto t_start = Clock::now();
 
-        if(!pd.addPrice(1000, 50.0)){ std::cerr << "FAIL: addPrice failed\n"; ok = false; }
-        if(!pd.getState()){ std::cerr << "FAIL: state after add\n"; ok = false; }
-        if(pd.recentPrice() != 50.0){ std::cerr << "FAIL: recentPrice expected 50.0 got " << pd.recentPrice() << "\n"; ok = false; }
-        if(pd.highestPrice() != 50.0){ std::cerr << "FAIL: highestPrice expected 50.0\n"; ok = false; }
-        if(pd.lowestPrice() != 50.0){ std::cerr << "FAIL: lowestPrice expected 50.0\n"; ok = false; }
-        if(pd.timestamp() != 1000){ std::cerr << "FAIL: timestamp expected 1000\n"; ok = false; }
-        if(pd.sizeofMap() != 1){ std::cerr << "FAIL: sizeofMap expected 1\n"; ok = false; }
+    // -------------------------------------------------
+    // Load CSV
+    // -------------------------------------------------
+    auto t_load_start = Clock::now();
 
-        pd.addPrice(1001, 55.5);
-        pd.addPrice(999, 40.0);
-        if(pd.highestPrice() != 55.5){ std::cerr << "FAIL: highestPrice expected 55.5\n"; ok = false; } else { std::cout << "PASS: highestPrice updated\n"; }
-        if(pd.lowestPrice() != 40.0){ std::cerr << "FAIL: lowestPrice expected 40.0\n"; ok = false; } else { std::cout << "PASS: lowestPrice updated\n"; }
-        if(pd.recentPrice() != 55.5){ std::cerr << "FAIL: recentPrice expected 55.5\n"; ok = false; } else { std::cout << "PASS: recentPrice updated\n"; }
-        if(pd.price(999) != 40.0){ std::cerr << "FAIL: price lookup expected 40.0\n"; ok = false; } else { std::cout << "PASS: price lookup\n"; }
-
-        auto v = pd.returnNdata(2);
-        if(v.size() != 2 || v[0] != 55.5 || v[1] != 50.0){ std::cerr << "FAIL: returnNdata expected [55.5,50.0]\n"; ok = false; } else { std::cout << "PASS: returnNdata\n"; }
-
-        if(ok) std::cout << "All tests passed ✅\n"; else std::cout << "Some tests failed ⚠️\n";
-    };
-
-    // run tests when no filename or when --test provided
-    if(argc < 2 || std::string(argv[1]) == "--test"){
-        runTests();
-        return 0;
-    }
+    const string csvPath = "data/6758_jp_d.csv";
 
     PriceData priceData;
     readCSV reader;
 
-    //Read the CSV file
-    bool success = reader.readData(argv[1], priceData);
-
-    if (!success) {
-        std::cerr << "Failed to read CSV\n";
-        return -1;
+    if (!reader.readData(csvPath.c_str(), priceData)) {
+        cerr << "Failed to read CSV: " << csvPath << "\n";
+        return 1;
     }
 
-    std::cout << "CSV read successfully. Summary:\n";
-    std::cout << "  entries: " << priceData.sizeofMap() << "\n";
-    std::cout << "  latest ts: " << priceData.timestamp() << ", latest price: " << priceData.recentPrice() << "\n";
-    std::cout << "  high: " << priceData.highestPrice() << ", low: " << priceData.lowestPrice() << "\n";
+    auto t_load_end = Clock::now();
 
+    cout << "Loaded CSV successfully\n";
+    cout << "Total data points: " << priceData.sizeofMap() << "\n\n";
+
+    double price = priceData.recentPrice();
+
+    // -------------------------------------------------
+    // SMA horizons
+    // -------------------------------------------------
+    auto t_analysis_start = Clock::now();
+
+    vector<int> windows = {20, 50, 200};
+    vector<double> smaValues;
+    vector<string> trendLabels;
+
+    cout << "=== Trend Summary ===\n";
+    cout << "Latest Price: " << price << "\n\n";
+
+    for (int w : windows) {
+        SimpleMovingAverage sma(w);
+        double val = sma.SMA(priceData);
+
+        smaValues.push_back(val);
+
+        cout << "SMA(" << w << "): ";
+        if (val == -1) {
+            cout << "not ready\n";
+            trendLabels.push_back("N/A");
+        } else {
+            cout << val;
+            if (price > val) {
+                cout << "  → Bullish\n";
+                trendLabels.push_back("BUY");
+            } else {
+                cout << "  → Bearish\n";
+                trendLabels.push_back("SELL");
+            }
+        }
+    }
+
+    auto t_analysis_end = Clock::now();
+
+    // -------------------------------------------------
+    // Consensus signal
+    // -------------------------------------------------
+    int buyCount = 0;
+    int sellCount = 0;
+
+    for (const auto& t : trendLabels) {
+        if (t == "BUY")  buyCount++;
+        if (t == "SELL") sellCount++;
+    }
+
+    cout << "\n=== Consensus Signal ===\n";
+
+    if (buyCount > sellCount) {
+        cout << "Signal: BUY\n";
+    } else if (sellCount > buyCount) {
+        cout << "Signal: SELL\n";
+    } else {
+        cout << "Signal: HOLD\n";
+    }
+
+    cout << "\nReasoning:\n";
+    for (size_t i = 0; i < windows.size(); ++i) {
+        cout << "- SMA(" << windows[i] << "): " << trendLabels[i] << "\n";
+    }
+
+    auto t_end = Clock::now();
+
+    // -------------------------------------------------
+    // Runtime statistics
+    // -------------------------------------------------
+    auto load_time =
+        chrono::duration_cast<chrono::microseconds>(t_load_end - t_load_start).count();
+
+    auto analysis_time =
+        chrono::duration_cast<chrono::microseconds>(t_analysis_end - t_analysis_start).count();
+
+    auto total_time =
+        chrono::duration_cast<chrono::microseconds>(t_end - t_start).count();
+
+    cout << "\n=== Runtime ===\n";
+    cout << "CSV load time:      " << load_time     << " µs\n";
+    cout << "Analysis time:      " << analysis_time << " µs\n";
+    cout << "Total runtime:      " << total_time    << " µs\n";
+
+    cout << "\n=== Demo Complete ===\n";
     return 0;
 }
