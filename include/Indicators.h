@@ -3,14 +3,17 @@
 
 
 #include <cstddef>
+#include <vector>
 #include "PriceDataTracker.h"
 
-using namespace std;
 
 class SimpleMovingAverage{
 public:
     SimpleMovingAverage(std::size_t N);
     double SMA(PriceData& priceData);
+
+    //getters
+    size_t getWindowSize();
 
 private:
     std::size_t nWindow;
