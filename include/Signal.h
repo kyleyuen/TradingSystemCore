@@ -1,19 +1,10 @@
-#include "Indicators.h"
+#ifndef SIGNAL_H
+#define SIGNAL_H
 
-class Signal{
-public:
-    enum status{
-        HOLD,
-        BUY,
-        SELL
-    };
-
-bool strategyInterface(const string strat);
-status SMATrendStragegy(SimpleMovingAverage& SimpleMovingAverage);
-
-
-
-
-private:
-
+enum class Signal {
+    HOLD,
+    BUY,
+    SELL
 };
+
+#endif
