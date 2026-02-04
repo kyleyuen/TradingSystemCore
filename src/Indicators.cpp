@@ -5,8 +5,12 @@ using namespace std;
 
 SimpleMovingAverage::SimpleMovingAverage(std::size_t N){
     nWindow = N; 
-
 }
+
+size_t SimpleMovingAverage::getWindowSize(){
+    return nWindow; 
+}
+
 
 double SimpleMovingAverage::SMA(PriceData& priceData){
     vector<double> prices = priceData.returnNdata(nWindow);
