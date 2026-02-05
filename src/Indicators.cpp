@@ -7,11 +7,12 @@ SimpleMovingAverage::SimpleMovingAverage(std::size_t N){
     nWindow = N; 
 }
 
+//getter function for window Size 
 size_t SimpleMovingAverage::getWindowSize(){
     return nWindow; 
 }
 
-
+//to provide the SMA average base on the recieved sum and nWindow
 double SimpleMovingAverage::SMA(PriceData& priceData){
     vector<double> prices = priceData.returnNdata(nWindow);
     if(prices.size() < nWindow) return -1; 
